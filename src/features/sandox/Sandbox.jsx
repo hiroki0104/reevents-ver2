@@ -8,7 +8,9 @@ import TestMap from './TestMap';
 
 export default function Sandbox() {
   const dispatch = useDispatch();
+  const [target, setTarget] = useState(null);
   const data = useSelector((state) => state.test.data);
+  const { loading } = useSelector((state) => state.async);
   const defaultProps = {
     center: {
       lat: 59.95,
@@ -27,13 +29,23 @@ export default function Sandbox() {
       <h1>Testing 123</h1>
       <h3>The date is: {data} </h3>
       <Button
+        name='increment'
+        loading={loading && target === 'increment'}
         content='Increment'
         color='green'
-        onClick={() => dispatch(increment(10))}></Button>
+        onClick={(e) => {
+          dispatch(increment(20));
+          setTarget(e.target.name);
+        }}></Button>
       <Button
+        name='decrement'
+        loading={loading && target === 'decrement'}
         content='Decrement'
-        color='green'
-        onClick={() => dispatch(decrement(5))}></Button>
+        color='red'
+        onClick={(e) => {
+          dispatch(decrement(10));
+          setTarget(e.target.name);
+        }}></Button>
       <Button
         content='Open Modal'
         color='teal'
