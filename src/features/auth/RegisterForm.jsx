@@ -6,27 +6,27 @@ import MyTextInput from '../../app/common/form/MyTextInput';
 import { Button, Label, Divider } from 'semantic-ui-react';
 import { useDispatch } from 'react-redux';
 import { closeModal } from '../../app/common/modals/modalReducer';
-import { signInwithEmail } from '../../app/firestore/firebaseService';
+import { registerInFirebase } from '../../app/firestore/firebaseService';
 import SocialLogin from './SocialLogin';
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const dispatch = useDispatch();
   return (
-    <ModalWrapper size='mini' header='Sign in to Re-vents'>
+    <ModalWrapper size='mini' header='Register to Re-vents'>
       <Formik
-        initialValues={{ email: '', password: '' }}
+        initialValues={{ name: '', email: '', password: '' }}
         validationSchema={Yup.object({
+          name: Yup.string().required(),
           email: Yup.string().required().email(),
           password: Yup.string().required(),
         })}
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           try {
-            await signInwithEmail(values);
+            await registerInFirebase(values);
             setSubmitting(false);
             dispatch(closeModal());
           } catch (e) {
-            console.log(e);
-            setErrors({ auth: 'Problem with e-mail or password' });
+            setErrors({ auth: e.message });
             setSubmitting(false);
           }
         }}>
@@ -40,6 +40,7 @@ export default function LoginForm() {
                 content={errors.auth}
               />
             )}
+            <MyTextInput name='name' placeholder='Name' />
             <MyTextInput name='email' placeholder='Email Address' />
             <MyTextInput
               name='password'
@@ -53,7 +54,7 @@ export default function LoginForm() {
               fluid
               size='large'
               color='teal'
-              content='Login'
+              content='Register'
             />
             <Divider horizontal>Or</Divider>
             <SocialLogin />
