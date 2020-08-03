@@ -23,5 +23,6 @@ export default function useFirestoreCollection({ query, data, deps }) {
     return () => {
       unsubscribe();
     };
-  }, deps); //
+    // eslint-disable-next-line
+  }, deps);
 }

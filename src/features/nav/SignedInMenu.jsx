@@ -6,7 +6,7 @@ import { signOutFirebase } from '../../app/firestore/firebaseService';
 import { toast } from 'react-toastify';
 
 function SignedInMenu() {
-  const { currentUser } = useSelector(({ auth }) => auth);
+  const { currentUserProfile } = useSelector(({ profile }) => profile);
   const history = useHistory();
 
   async function handleSignOut() {
@@ -22,16 +22,20 @@ function SignedInMenu() {
       <Image
         avatar
         spaced='right'
-        src={currentUser.photoURL || '/assets/user.png'}
+        src={currentUserProfile.photoURL || '/assets/user.png'}
       />
-      <Dropdown position='top left' text={currentUser.displayName}>
+      <Dropdown position='top left' text={currentUserProfile.displayName}>
         <Dropdown.Menu>
           <Dropdown.Item
             as={Link}
             to='/createEvent'
             text='Create Event'
             icon='plus'></Dropdown.Item>
-          <Dropdown.Item text='My profile' icon='user'></Dropdown.Item>
+          <Dropdown.Item
+            text='My profile'
+            as={Link}
+            to={`/profile/${currentUserProfile.id}`}
+            icon='user'></Dropdown.Item>
           <Dropdown.Item
             text='My account'
             icon='settings'
