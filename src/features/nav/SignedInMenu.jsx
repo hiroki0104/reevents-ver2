@@ -22,9 +22,9 @@ function SignedInMenu() {
       <Image
         avatar
         spaced='right'
-        src={currentUserProfile.photoURL || '/assets/user.png'}
+        src={currentUserProfile?.photoURL || '/assets/user.png'}
       />
-      <Dropdown position='top left' text={currentUserProfile.displayName}>
+      <Dropdown position='top left' text={currentUserProfile?.displayName}>
         <Dropdown.Menu>
           <Dropdown.Item
             as={Link}
@@ -34,7 +34,7 @@ function SignedInMenu() {
           <Dropdown.Item
             text='My profile'
             as={Link}
-            to={`/profile/${currentUserProfile.id}`}
+            to={`/profile/${currentUserProfile?.id}`}
             icon='user'></Dropdown.Item>
           <Dropdown.Item
             text='My account'

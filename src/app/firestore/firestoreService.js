@@ -1,5 +1,4 @@
 import firebase from '../config/firebase';
-import cuid from 'cuid';
 
 const db = firebase.firestore();
 
@@ -21,8 +20,21 @@ export function dataFromSnapshot(snapshot) {
   };
 }
 
-export function listenToEventsFromFirestore() {
-  return db.collection('events').orderBy('date');
+export function listenToEventsFromFirestore(predicate) {
+  const user = firebase.auth().currentUser;
+  let eventsRef = db.collection('events').orderBy('date');
+  switch (predicate.get('filter')) {
+    case 'isGoing':
+      return eventsRef
+        .where('attendeeIds', 'array-contains', user.uid)
+        .where('date', '>=', predicate.get('startDate'));
+    case 'isHosting':
+      return eventsRef
+        .where('hostUid', '==', user.uid)
+        .where('date', '>=', predicate.get('startDate'));
+    default:
+      return eventsRef.where('date', '>=', predicate.get('startDate'));
+  }
 }
 
 export function listenToEventFromFirestore(eventId) {
@@ -30,15 +42,18 @@ export function listenToEventFromFirestore(eventId) {
 }
 
 export function addeventToFireStore(event) {
+  const user = firebase.auth().currentUser;
   return db.collection('events').add({
     ...event,
-    hostedBy: 'Diana',
-    hostPhotoURL: 'https://randomuser.me/api/portraits/men/42.jpg',
+    hostedBy: user.displayName,
+    hostUid: user.uid,
+    hostPhotoURL: user.photoURL,
     attendees: firebase.firestore.FieldValue.arrayUnion({
-      id: cuid(),
-      name: 'Diana',
-      photoURL: 'https://randomuser.me/api/portraits/men/42.jpg',
+      id: user.uid,
+      name: user.displayName,
+      photoURL: user.photoURL || null,
     }),
+    attendeeIds: firebase.firestore.FieldValue.arrayUnion(user.uid),
   });
 }
 
@@ -134,4 +149,56 @@ export function deletePhotoFromCollection(photoId) {
     .collection('photos')
     .doc(photoId)
     .delete();
+}
+
+export function addUserAttendance(event) {
+  const user = firebase.auth().currentUser;
+  return db
+    .collection('events')
+    .doc(event.id)
+    .update({
+      attendees: firebase.firestore.FieldValue.arrayUnion({
+        id: user.uid,
+        name: user.displayName,
+        photoURL: user.photoURL || null,
+      }),
+      attendeeIds: firebase.firestore.FieldValue.arrayUnion(user.uid),
+    });
+}
+
+export async function cancelUserAttendance(event) {
+  const user = firebase.auth().currentUser;
+  try {
+    const eventDoc = await db.collection('events').doc(event.id).get();
+    return db
+      .collection('events')
+      .doc(event.id)
+      .update({
+        attendeeIds: firebase.firestore.FieldValue.arrayRemove(user.uid),
+        attendees: eventDoc
+          .data()
+          .attendees.filter((attendee) => attendee.id !== user.uid),
+      });
+  } catch (e) {
+    throw e;
+  }
+}
+
+export function getUserEventsQuery(activeTab, userUid) {
+  let eventsRef = db.collection('events');
+  const today = new Date();
+  switch (activeTab) {
+    case 1: // past Event
+      return eventsRef
+        .where('attendeeIds', 'array-contains', userUid)
+        .where('date', '<=', today)
+        .orderBy('date', 'desc');
+    case 2:
+      return eventsRef.where('hostUid', '==', userUid).orderBy('date');
+    default:
+      return eventsRef
+        .where('attendeeIds', 'array-contains', userUid)
+        .where('date', '>=', today)
+        .orderBy('date');
+  }
 }
