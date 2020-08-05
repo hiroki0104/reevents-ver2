@@ -4,14 +4,20 @@ import EventListAttendee from './EventListAttendee';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { deleteEventInFirestore } from '../../../app/firestore/firestoreService';
+import { useSelector } from 'react-redux';
 
 function EventListItem({ event }) {
+  const { currentUser } = useSelector((state) => state.auth);
   return (
     <Segment.Group>
       <Segment>
         <Item.Group>
           <Item>
-            <Item.Image size='tiny' circular src={event.hostPhotoURL} />
+            <Item.Image
+              size='tiny'
+              circular
+              src={event.hostPhotoURL || '/assets/user.png'}
+            />
             <Item.Content>
               <Item.Header content={event.title} />
               <Item.Description>
@@ -45,12 +51,14 @@ function EventListItem({ event }) {
       </Segment>
       <Segment clearing>
         <div>{event.description}</div>
-        <Button
-          color='red'
-          floated='right'
-          content='Delete'
-          onClick={() => deleteEventInFirestore(event.id)}
-        />
+        {currentUser?.uid === event.hostUid && (
+          <Button
+            color='red'
+            floated='right'
+            content='Delete'
+            onClick={() => deleteEventInFirestore(event.id)}
+          />
+        )}
         <Button
           as={Link}
           to={`/events/${event.id}`}
