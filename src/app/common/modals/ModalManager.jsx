@@ -10,12 +10,14 @@ export default function ModalManager() {
     LoginForm,
     RegisterForm,
   };
-  const currentModal = useSelector((state) => state.modals);
+
+  let currentModal = useSelector((state) => state.modals);
   let renderedModal;
   if (currentModal) {
     const { modalType, modalProps } = currentModal;
     const ModalComponent = modalLookup[modalType];
     renderedModal = <ModalComponent {...modalProps} />;
   }
+
   return <span>{renderedModal}</span>;
 }

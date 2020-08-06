@@ -14,16 +14,18 @@ import AccountPage from '../../features/auth/AccountPage';
 import { useSelector } from 'react-redux';
 import LoadingComponent from './LoadingComponent';
 import ProfilePage from '../../features/profiles/profilePage/ProfilePage';
+import PrivateRoute from '../layout/PrivateRoute';
 
 function App() {
   const { key } = useLocation();
   const { initialized } = useSelector((state) => state.async);
+  const { modals } = useSelector((state) => state);
 
   if (!initialized) return <LoadingComponent content='Loading app...' />;
 
   return (
     <>
-      <ModalManager />
+      {modals && <ModalManager />}
       <ToastContainer position='bottom-right' hideProgressBar />
       <Route path='/' component={HomePage} exact />
       <Route
@@ -35,13 +37,13 @@ function App() {
               <Route path='/events' component={EventDashboard} exact />
               <Route path='/sandbox' component={Sandbox} exact />
               <Route path='/events/:id' component={EventDetailedPage} />
-              <Route
+              <PrivateRoute
                 path={['/createEvent', '/manage/:id']}
                 component={EventForm}
                 key={key}
               />
-              <Route path='/account' component={AccountPage} />
-              <Route path='/profile/:id' component={ProfilePage} />
+              <PrivateRoute path='/account' component={AccountPage} />
+              <PrivateRoute path='/profile/:id' component={ProfilePage} />
               <Route path='/error' component={ErrorComponent} />
             </Container>
           </>
